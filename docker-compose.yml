@@ -1,0 +1,48 @@
+version: '3'
+
+services:
+  homeassistant:
+    container_name: homeassistant
+    image: ghcr.io/home-assistant/home-assistant:stable
+    restart: unless-stopped
+    environment:
+      - DISABLE_JEMALLOC=true
+      - TZ=America/Sao_Paulo
+    volumes:
+      - ./config:/config
+      - /etc/localtime:/etc/localtime:ro
+      - /run/dbus:/run/dbus:ro
+    devices:
+      - /dev/serial/by-id/usb-ITEAD_SONOFF_Zigbee_3.0_USB_Dongle_Plus_V2_20231220141142-if00:/dev/serial/by-id/usb-ITEAD_SONOFF_Zigbee_3.0_USB_Dongle_Plus_V2_20231220141142-if00
+    privileged: true
+    network_mode: host
+
+  mosquitto:
+    container_name: mosquitto
+    image: eclipse-mosquitto
+    restart: unless-stopped
+    volumes:
+      - ./mosquitto:/mosquitto
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    network_mode: host
+      #ports:
+      #- 1883:1883
+      #- 9001:9001
+
+  zigbee2mqtt:
+    container_name: zigbee2mqtt
+    image: koenkk/zigbee2mqtt
+    restart: unless-stopped
+    environment:
+      - TZ=America/Sao_Paulo
+    volumes:
+      - ./zigbee2mqtt/data:/app/data
+      - /run/udev:/run/udev:ro
+        #ports:
+        #- 8080:8080
+    devices:
+      - /dev/serial/by-id/usb-ITEAD_SONOFF_Zigbee_3.0_USB_Dongle_Plus_V2_20231220141142-if00:/dev/ttyACM0
+    privileged: true
+    network_mode: host
+
